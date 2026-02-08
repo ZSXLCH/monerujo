@@ -29,12 +29,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum Crypto {
-    XMR("XMR", "XMR", "XMR", "monero:tx_amount:recipient_name:tx_description", R.id.ibXMR, R.drawable.ic_monero, R.drawable.ic_monero_bw, Pattern.compile("^[48][a-zA-Z|\\d]{94}([a-zA-Z|\\d]{11})?$")),
-    BTC("BTC", "BTC", "BTC", "bitcoin:amount:label:message", R.id.ibBTC, R.drawable.ic_xmrto_btc, R.drawable.ic_xmrto_btc_off, Pattern.compile("^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$|^(bc1q)|(bc1p)[0-9A-Za-z]{37,62}$")),
-    LTC("LTC", "LTC", "LTC", "litecoin:amount:label:message", R.id.ibLTC, R.drawable.ic_xmrto_ltc, R.drawable.ic_xmrto_ltc_off, Pattern.compile("^([LM3])[A-Za-z0-9]{33}$|^(ltc1)[0-9A-Za-z]{39}$")),
-    ETH("ETH", "ETH", "ETH", "ethereum:amount:label:message", R.id.ibETH, R.drawable.ic_xmrto_eth, R.drawable.ic_xmrto_eth_off, Pattern.compile("^(0x)[0-9A-Fa-f]{40}$")),
-    USDT("USDT", "TRX", "USDT(TRC20)", "usdt:amount:label:message", R.id.ibUSDT, R.drawable.ic_xmrto_usdt_trc20, R.drawable.ic_xmrto_usdt_trc20_off, Pattern.compile("^T[1-9A-HJ-NP-Za-km-z]{33}$")),
-    SOLANA("SOL", "SOL", "SOL", "solana:amount:label:message", R.id.ibSOL, R.drawable.ic_xmrto_sol, R.drawable.ic_xmrto_sol_off, Pattern.compile("^[1-9A-HJ-NP-Za-km-z]{32,44}$"));
+    XMR("XMR", "XMR", "XMR", "monero:tx_amount:recipient_name:tx_description", Pattern.compile("^[48][a-zA-Z|\\d]{94}([a-zA-Z|\\d]{11})?$"));
 
     @Getter
     @NonNull
@@ -47,12 +42,6 @@ public enum Crypto {
     private final String label;
     @NonNull
     private final String uriSpec;
-    @Getter
-    private final int buttonId;
-    @Getter
-    private final int iconEnabledId;
-    @Getter
-    private final int iconDisabledId;
     @NonNull
     private final Pattern regex;
 

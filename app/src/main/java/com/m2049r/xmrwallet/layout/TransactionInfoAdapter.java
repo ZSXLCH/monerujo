@@ -32,7 +32,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.m2049r.xmrwallet.R;
-import com.m2049r.xmrwallet.data.Crypto;
 import com.m2049r.xmrwallet.data.UserNotes;
 import com.m2049r.xmrwallet.model.TransactionInfo;
 import com.m2049r.xmrwallet.util.Helper;
@@ -209,17 +208,7 @@ public class TransactionInfoAdapter extends RecyclerView.Adapter<TransactionInfo
             itemView.setTransitionName(context.getString(R.string.tx_item_transition_name, infoItem.hash));
 
             UserNotes userNotes = new UserNotes(infoItem.notes);
-            if (userNotes.xmrtoKey != null) {
-                final Crypto crypto = Crypto.withSymbol(userNotes.xmrtoCurrency);
-                if (crypto != null) {
-                    ivTxType.setImageResource(crypto.getIconEnabledId());
-                    ivTxType.setVisibility(View.VISIBLE);
-                } else {// otherwirse pretend we don't know it's a shift
-                    ivTxType.setVisibility(View.GONE);
-                }
-            } else {
-                ivTxType.setVisibility(View.GONE);
-            }
+            ivTxType.setVisibility(View.GONE);
 
             String displayAmount = Helper.getDisplayAmount(infoItem.getNetAmount(), Helper.DISPLAY_DIGITS_INFO);
             if (infoItem.direction == TransactionInfo.Direction.Direction_Out) {

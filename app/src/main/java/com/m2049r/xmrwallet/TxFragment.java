@@ -44,8 +44,6 @@ import com.m2049r.xmrwallet.data.UserNotes;
 import com.m2049r.xmrwallet.model.TransactionInfo;
 import com.m2049r.xmrwallet.model.Transfer;
 import com.m2049r.xmrwallet.model.Wallet;
-import com.m2049r.xmrwallet.service.shift.ShiftService;
-import com.m2049r.xmrwallet.service.shift.api.ShiftApi;
 import com.m2049r.xmrwallet.util.Helper;
 import com.m2049r.xmrwallet.util.ThemeHelper;
 import com.m2049r.xmrwallet.widget.Toolbar;
@@ -90,27 +88,11 @@ public class TxFragment extends Fragment {
     private View llWarning;
     private TextView tvWarning;
 
-    // XMRTO stuff
-    private View cvXmrTo;
-    private TextView tvTxXmrToKey;
-    private TextView tvDestinationBtc;
-    private TextView tvTxAmountBtc;
-    private TextView tvXmrToSupport;
-    private TextView tvXmrToKeyLabel;
-    private ImageView tvXmrToLogo;
+    // XMRTO stuff - removed
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_tx_info, container, false);
-
-        cvXmrTo = view.findViewById(R.id.cvXmrTo);
-        tvTxXmrToKey = view.findViewById(R.id.tvTxXmrToKey);
-        tvDestinationBtc = view.findViewById(R.id.tvDestinationBtc);
-        tvTxAmountBtc = view.findViewById(R.id.tvTxAmountBtc);
-        tvXmrToSupport = view.findViewById(R.id.tvXmrToSupport);
-        tvXmrToKeyLabel = view.findViewById(R.id.tvXmrToKeyLabel);
-
-        tvXmrToLogo = view.findViewById(R.id.tvXmrToLogo);
 
         tvAccount = view.findViewById(R.id.tvAccount);
         tvAddress = view.findViewById(R.id.tvAddress);
@@ -129,11 +111,6 @@ public class TxFragment extends Fragment {
 
         llWarning = view.findViewById(R.id.llWarning);
         tvWarning = view.findViewById(R.id.tvWarning);
-
-        tvTxXmrToKey.setOnClickListener(v -> {
-            Helper.clipBoardCopy(requireActivity(), getString(R.string.label_copy_xmrtokey), tvTxXmrToKey.getText().toString());
-            Toast.makeText(getActivity(), getString(R.string.message_copy_xmrtokey), Toast.LENGTH_SHORT).show();
-        });
 
         final Bundle args = getArguments();
         assert args != null;
@@ -314,7 +291,6 @@ public class TxFragment extends Fragment {
         }
         tvTxTransfers.setText(sb.toString());
         tvDestination.setText(dstSb.toString());
-        showBtcInfo();
 
         showLock();
     }
@@ -328,39 +304,6 @@ public class TxFragment extends Fragment {
         if (unlockDays > 0) {
             llWarning.setVisibility(View.VISIBLE);
             tvWarning.setText(getString(R.string.tx_locked, info.unlockTime, blocks, unlockDays));
-        }
-    }
-
-    @SuppressLint("SetTextI18n")
-    void showBtcInfo() {
-        if (userNotes.xmrtoKey != null) {
-            cvXmrTo.setVisibility(View.VISIBLE);
-
-            ShiftService service = ShiftService.findWithTag(userNotes.xmrtoTag);
-            tvXmrToKeyLabel.setText(getString(R.string.label_send_btc_xmrto_key_lb, service.getLabel()));
-            if (service.getIconId() == 0)
-                tvXmrToLogo.setVisibility(View.GONE);
-            else
-                tvXmrToLogo.setImageResource(service.getLogoId());
-
-            tvTxXmrToKey.setText(userNotes.xmrtoKey);
-
-            tvDestinationBtc.setText(userNotes.xmrtoDestination);
-            tvTxAmountBtc.setText(userNotes.xmrtoAmount + " " + userNotes.xmrtoCurrency);
-
-            ShiftApi shiftApi = service.getShiftApi();
-            if (shiftApi != null) {
-                tvXmrToSupport.setText(getString(R.string.label_send_btc_xmrto_info, service.getLabel()));
-                tvXmrToSupport.setPaintFlags(tvXmrToSupport.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-                tvXmrToSupport.setOnClickListener(v -> {
-                    startActivity(new Intent(Intent.ACTION_VIEW, shiftApi.getQueryOrderUri(userNotes.xmrtoKey)));
-                });
-            } else {
-                tvXmrToSupport.setVisibility(View.GONE);
-                tvXmrToKeyLabel.setVisibility(View.INVISIBLE);
-            }
-        } else {
-            cvXmrTo.setVisibility(View.GONE);
         }
     }
 
