@@ -1,13 +1,23 @@
 FROM debian:stable
 
-RUN set -x && apt-get update && apt-get install -y unzip automake build-essential curl file pkg-config git python3 python-is-python3 libtool libtinfo5 yacc
+ENV DOWNLOAD_URL=http://172.22.16.1:8080
+ENV GIT_URL=http://172.22.16.1:3000/zsxllch
+
+RUN set -x \
+ && apt-get update \
+ && apt-get install -y \
+    unzip automake build-essential curl file pkg-config git python3 python-is-python3 libtool yacc \
+ && curl -L -o /tmp/libtinfo5.deb https://ftp.debian.org/debian/pool/main/n/ncurses/libtinfo5_6.4-4_amd64.deb \
+ && dpkg -i /tmp/libtinfo5.deb \
+ && rm -f /tmp/libtinfo5.deb
+
 
 WORKDIR /opt/android
 ## INSTALL ANDROID SDK
 ENV ANDROID_SDK_REVISION=4333796
 ENV ANDROID_SDK_HASH=92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9
 RUN set -x \
-    && curl -O https://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_REVISION}.zip \
+    && curl -O ${DOWNLOAD_URL}/sdk-tools-linux-${ANDROID_SDK_REVISION}.zip \
     && echo "${ANDROID_SDK_HASH}  sdk-tools-linux-${ANDROID_SDK_REVISION}.zip" | sha256sum -c \
     && unzip sdk-tools-linux-${ANDROID_SDK_REVISION}.zip \
     && rm -f sdk-tools-linux-${ANDROID_SDK_REVISION}.zip
@@ -16,7 +26,7 @@ RUN set -x \
 ENV ANDROID_NDK_REVISION=17c
 ENV ANDROID_NDK_HASH=3f541adbd0330a9205ba12697f6d04ec90752c53d6b622101a2a8a856e816589
 RUN set -x \
-    && curl -O https://dl.google.com/android/repository/android-ndk-r${ANDROID_NDK_REVISION}-linux-x86_64.zip \
+    && curl -O ${DOWNLOAD_URL}/android-ndk-r${ANDROID_NDK_REVISION}-linux-x86_64.zip \
     && echo "${ANDROID_NDK_HASH}  android-ndk-r${ANDROID_NDK_REVISION}-linux-x86_64.zip" | sha256sum -c \
     && unzip android-ndk-r${ANDROID_NDK_REVISION}-linux-x86_64.zip \
     && rm -f android-ndk-r${ANDROID_NDK_REVISION}-linux-x86_64.zip
@@ -39,7 +49,7 @@ ARG CMAKE_VERSION=3.14.6
 ARG CMAKE_HASH=82e08e50ba921035efa82b859c74c5fbe27d3e49a4003020e3c77618a4e912cd
 RUN set -x \
     && cd /usr \
-    && curl -L -O https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
+    && curl -L -O ${DOWNLOAD_URL}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
     && echo "${CMAKE_HASH}  cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" | sha256sum -c \
     && tar -xzf /usr/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
     && rm -f /usr/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz
@@ -50,7 +60,7 @@ ARG BOOST_VERSION=1_70_0
 ARG BOOST_VERSION_DOT=1.70.0
 ARG BOOST_HASH=430ae8354789de4fd19ee52f3b1f739e1fba576f0aded0897c3c2bc00fb38778
 RUN set -x \
-    && curl -L -o  boost_${BOOST_VERSION}.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION_DOT}/source/boost_${BOOST_VERSION}.tar.bz2 \
+    && curl -L -o  boost_${BOOST_VERSION}.tar.bz2 ${DOWNLOAD_URL}/boost_${BOOST_VERSION}.tar.bz2 \
     && echo "${BOOST_HASH}  boost_${BOOST_VERSION}.tar.bz2" | sha256sum -c \
     && tar -xvf boost_${BOOST_VERSION}.tar.bz2 \
     && rm -f boost_${BOOST_VERSION}.tar.bz2 \
@@ -62,11 +72,14 @@ ENV PATH=$TOOLCHAIN_DIR/aarch64-linux-android/bin:$TOOLCHAIN_DIR/bin:$PATH
 
 ARG NPROC=4
 
+RUN which clang && clang --version
+
+
 # Build iconv for lib boost locale
 ENV ICONV_VERSION=1.16
 ENV ICONV_HASH=e6a1b1b589654277ee790cce3734f07876ac4ccfaecbee8afa0b649cf529cc04
 RUN set -x \
-    && curl -O http://ftp.gnu.org/pub/gnu/libiconv/libiconv-${ICONV_VERSION}.tar.gz \
+    && curl -O ${DOWNLOAD_URL}/libiconv-${ICONV_VERSION}.tar.gz \
     && echo "${ICONV_HASH}  libiconv-${ICONV_VERSION}.tar.gz" | sha256sum -c \
     && tar -xzf libiconv-${ICONV_VERSION}.tar.gz \
     && rm -f libiconv-${ICONV_VERSION}.tar.gz \
@@ -83,7 +96,7 @@ RUN set -x \
 ENV ZLIB_VERSION=1.3.1
 ENV ZLIB_HASH=9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23
 RUN set -x \
-    && curl -O https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz \
+    && curl -O ${DOWNLOAD_URL}/zlib-${ZLIB_VERSION}.tar.gz \
     && echo "${ZLIB_HASH}  zlib-${ZLIB_VERSION}.tar.gz" | sha256sum -c \
     && tar -xzf zlib-${ZLIB_VERSION}.tar.gz \
     && rm zlib-${ZLIB_VERSION}.tar.gz \
@@ -96,7 +109,7 @@ ARG OPENSSL_VERSION=3.0.5
 ARG OPENSSL_HASH=aa7d8d9bef71ad6525c55ba11e5f4397889ce49c2c9349dcea6d3e4f0b024a7a
 # openssl explicitly demands to be built by a clang that has a "/prebuilt/" somewhere along its path, so use the prebuilt version, but make sure to specify the target android api
 RUN set -x \
-    && curl -LO https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
+    && curl -LO ${DOWNLOAD_URL}/openssl-${OPENSSL_VERSION}.tar.gz \
     && echo "${OPENSSL_HASH}  openssl-${OPENSSL_VERSION}.tar.gz" | sha256sum -c \
     && tar -xzf openssl-${OPENSSL_VERSION}.tar.gz \
     && rm openssl-${OPENSSL_VERSION}.tar.gz \
@@ -115,7 +128,7 @@ RUN set -x \
 ARG ZMQ_VERSION=v4.3.2
 ARG ZMQ_HASH=a84ffa12b2eb3569ced199660bac5ad128bff1f0
 RUN set -x \
-    && git clone https://github.com/zeromq/libzmq.git -b ${ZMQ_VERSION} \
+    && git clone ${GIT_URL}/libzmq.git -b ${ZMQ_VERSION} \
     && cd libzmq \
     && test `git rev-parse HEAD` = ${ZMQ_HASH} || exit 1 \
     && ./autogen.sh \
@@ -125,9 +138,9 @@ RUN set -x \
 
 # Sodium
 ARG SODIUM_VERSION=1.0.18
-ARG SODIUM_HASH=4f5e89fa84ce1d178a6765b8b46f2b6f91216677
+ARG SODIUM_HASH=45b09a607d596e40adbff9ab812e47d85175c053
 RUN set -x \
-    && git clone https://github.com/jedisct1/libsodium.git -b ${SODIUM_VERSION} \
+    && git clone ${GIT_URL}/libsodium.git -b ${SODIUM_VERSION} \
     && cd libsodium \
     && test `git rev-parse HEAD` = ${SODIUM_HASH} || exit 1 \
     && ./autogen.sh \
@@ -139,7 +152,7 @@ RUN set -x \
 ARG LIBEXPAT_VERSION=R_2_4_8
 ARG LIBEXPAT_HASH=3bab6c09bbe8bf42d84b81563ddbcf4cca4be838
 RUN set -x \
-    && git clone https://github.com/libexpat/libexpat.git -b ${LIBEXPAT_VERSION} \
+    && git clone ${GIT_URL}/libexpat.git -b ${LIBEXPAT_VERSION} \
     && cd libexpat/expat \
     && test `git rev-parse HEAD` = ${LIBEXPAT_HASH} || exit 1 \
     && ./buildconf.sh \
@@ -150,7 +163,7 @@ RUN set -x \
 # libunbound
 ARG LIBUNBOUND_VERSION=release-1.16.1
 ARG LIBUNBOUND_HASH=903538c76e1d8eb30d0814bb55c3ef1ea28164e8
-RUN git clone https://github.com/NLnetLabs/unbound.git -b ${LIBUNBOUND_VERSION}
+RUN git clone ${GIT_URL}/unbound.git -b ${LIBUNBOUND_VERSION}
 RUN set -x \
     && cd unbound \
     && test `git rev-parse HEAD` = ${LIBUNBOUND_HASH} || exit 1 \
